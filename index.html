@@ -51,12 +51,13 @@
             position: absolute;
             bottom: 80px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            max-width: 300px;
-            z-index: 100;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 320px;
+            width: 90%;
+            z-index: 1000;
             display: none;
         }
         .ui-panel.show {
@@ -90,13 +91,26 @@
             text-align: center;
         }
 
-        .control-group { margin-bottom: 12px; }
+        .control-group { margin-bottom: 16px; }
+        .label-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
         label {
-            display: block;
-            font-size: 0.85rem;
-            color: #4a5568;
-            margin-bottom: 3px;
+            font-size: 0.9rem;
+            color: #2d3748;
             font-weight: bold;
+        }
+        .value-indicator {
+            font-family: monospace;
+            background: #edf2f7;
+            color: #2b6cb0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
         }
         input[type="range"] { width: 100%; cursor: pointer; }
         
@@ -111,26 +125,30 @@
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.2);
             z-index: 200;
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
         }
         .btn {
             background: #4299e1;
             color: white;
-            padding: 12px 30px;
+            padding: 12px 20px;
             border-radius: 12px;
             font-weight: bold;
             border: none;
             cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 15px;
+            transition: background 0.2s, transform 0.1s;
             font-size: 1.1rem;
+            flex: 1;
         }
         .btn:hover { background: #3182ce; }
+        .btn:active { transform: scale(0.95); }
         .btn-outline {
             background: transparent;
             border: 2px solid #4299e1;
             color: #4299e1;
+        }
+        .btn-outline:hover {
+            background: #ebf8ff;
         }
     </style>
 </head>
@@ -142,35 +160,59 @@
         <div class="stat-card">得分: <span id="score">0</span></div>
     </div>
 
+    <!-- 右下角圖示 -->
     <div id="settings-toggle" title="調整設定">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 1.5-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </div>
 
+    <!-- 參數調整面板 -->
     <div class="ui-panel" id="settings-panel">
-        <h2 class="text-lg font-bold mb-3 text-blue-600">復健參數調整</h2>
+        <h2 class="text-xl font-bold mb-5 text-blue-700 border-b pb-2">復健參數調整</h2>
+        
         <div class="control-group">
-            <label>前進速度</label>
+            <div class="label-wrapper">
+                <label>前進速度</label>
+                <span class="value-indicator" id="display-speed">3</span>
+            </div>
             <input type="range" id="param-speed" min="1" max="10" value="3">
         </div>
+
         <div class="control-group">
-            <label>垂直靈敏度</label>
+            <div class="label-wrapper">
+                <label>垂直靈敏度</label>
+                <span class="value-indicator" id="display-sensitivity">1.5x</span>
+            </div>
             <input type="range" id="param-sensitivity" min="0.1" max="4" step="0.1" value="1.5">
         </div>
+
         <div class="control-group">
-            <label>安全通道大小</label>
-            <input type="range" id="param-gap" min="150" max="450" value="280">
+            <div class="label-wrapper">
+                <label>安全通道大小</label>
+                <span class="value-indicator" id="display-gap">280px</span>
+            </div>
+            <input type="range" id="param-gap" min="150" max="450" step="10" value="280">
         </div>
+
         <div class="control-group">
-            <label>角色大小</label>
+            <div class="label-wrapper">
+                <label>角色大小</label>
+                <span class="value-indicator" id="display-size">40px</span>
+            </div>
             <input type="range" id="param-size" min="20" max="60" value="40">
         </div>
-        <button class="btn btn-outline w-full py-2 mt-2" onclick="toggleSettings()">關閉面板</button>
+
+        <button class="btn btn-outline w-full py-2 mt-4" onclick="toggleSettings()">關閉面板</button>
     </div>
 
+    <!-- 訊息提示 -->
     <div id="message-overlay">
         <h1 id="msg-title" class="text-3xl font-bold mb-2">垂直導航練習</h1>
-        <p id="msg-content" class="text-gray-600 mb-6">前後移動滑鼠來控制角色</p>
-        <button class="btn w-full" id="start-btn" onclick="startGame()">開始練習</button>
+        <div id="msg-content" class="text-gray-600 mb-6">前後移動滑鼠來控制角色</div>
+        
+        <div class="flex flex-col sm:flex-row gap-4" id="btn-container">
+            <button class="btn" id="start-btn" onclick="startGame()">開始練習</button>
+            <button class="btn btn-outline hidden" id="gameOver-settings-btn" onclick="toggleSettings()">調整參數</button>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -186,6 +228,12 @@
     const msgContent = document.getElementById('msg-content');
     const settingsPanel = document.getElementById('settings-panel');
     const settingsToggle = document.getElementById('settings-toggle');
+    const gameOverSettingsBtn = document.getElementById('gameOver-settings-btn');
+
+    const displaySpeed = document.getElementById('display-speed');
+    const displaySensitivity = document.getElementById('display-sensitivity');
+    const displayGap = document.getElementById('display-gap');
+    const displaySize = document.getElementById('display-size');
 
     let gameState = 'START';
     let score = 0;
@@ -195,13 +243,50 @@
 
     let player = { x: 100, y: 0, size: 40, targetY: 0 };
     let obstacles = [];
-    
+    let coins = []; 
+    let floatingTexts = []; // 新增：用於儲存 +1 動畫
+
+    // 音訊上下文
+    let audioCtx = null;
+
     const params = {
         get speed() { return parseInt(document.getElementById('param-speed').value); },
         get sensitivity() { return parseFloat(document.getElementById('param-sensitivity').value); },
         get gap() { return parseInt(document.getElementById('param-gap').value); },
         get playerSize() { return parseInt(document.getElementById('param-size').value); }
     };
+
+    // 音效產生器：合成一個清脆的「叮」聲
+    function playCoinSound() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 高音
+        osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1); // 快速滑音到 E6
+        
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); // 快速淡出
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function updateValueDisplays() {
+        displaySpeed.innerText = document.getElementById('param-speed').value;
+        displaySensitivity.innerText = document.getElementById('param-sensitivity').value + 'x';
+        displayGap.innerText = document.getElementById('param-gap').value + 'px';
+        displaySize.innerText = document.getElementById('param-size').value + 'px';
+    }
+
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+        input.addEventListener('input', updateValueDisplays);
+    });
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -212,7 +297,14 @@
     window.addEventListener('resize', resize);
     resize();
 
-    settingsToggle.addEventListener('click', () => settingsPanel.classList.toggle('show'));
+    settingsToggle.addEventListener('click', toggleSettings);
+    
+    function toggleSettings() {
+        settingsPanel.classList.toggle('show');
+        if (settingsPanel.classList.contains('show')) {
+            updateValueDisplays();
+        }
+    }
 
     window.addEventListener('mousemove', (e) => {
         if (gameState !== 'PLAYING') return;
@@ -233,17 +325,31 @@
 
     function createObstacle() {
         const gapY = Math.random() * (canvas.height - params.gap - 100) + 50;
-        obstacles.push({ x: canvas.width, gapTop: gapY, gapBottom: gapY + params.gap, width: 70, passed: false });
+        const obX = canvas.width;
+        
+        obstacles.push({ x: obX, gapTop: gapY, gapBottom: gapY + params.gap, width: 70, passed: false });
+        
+        coins.push({
+            x: obX + 35, 
+            y: gapY + (params.gap / 2),
+            radius: 15,
+            collected: false,
+            pulse: 0 
+        });
     }
 
     function startGame() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         gameState = 'PLAYING';
         messageOverlay.style.display = 'none';
         settingsPanel.classList.remove('show');
+        gameOverSettingsBtn.classList.add('hidden');
         score = 0;
         timerElapsed = 0;
         scoreElement.innerText = score;
         obstacles = [];
+        coins = [];
+        floatingTexts = [];
         player.size = params.playerSize;
         lastTime = performance.now();
         requestAnimationFrame(gameLoop);
@@ -259,6 +365,7 @@
             <p class="mt-4 text-sm text-gray-500">這是一次很棒的肌肉控制練習！</p>
         `;
         document.getElementById('start-btn').innerText = "再次練習";
+        gameOverSettingsBtn.classList.remove('hidden');
     }
 
     function update(dt) {
@@ -283,14 +390,68 @@
             }
             if (ob.x + ob.width < -100) obstacles.splice(i, 1);
         }
+
+        for (let i = coins.length - 1; i >= 0; i--) {
+            let coin = coins[i];
+            coin.x -= params.speed * (dt / 16);
+            coin.pulse += 0.1;
+
+            if (!coin.collected) {
+                const dist = Math.hypot(player.x - coin.x, player.y - coin.y);
+                if (dist < (player.size/2 + coin.radius)) {
+                    coin.collected = true;
+                    score += 1;
+                    scoreElement.innerText = score;
+                    playCoinSound(); // 播放音效
+                    // 新增：漂浮文字動畫
+                    floatingTexts.push({
+                        x: coin.x,
+                        y: coin.y,
+                        opacity: 1,
+                        text: "+1"
+                    });
+                }
+            }
+
+            if (coin.x < -50 || (coin.collected && coin.radius <= 0)) coins.splice(i, 1);
+            if (coin.collected) coin.radius -= 2;
+        }
+
+        // 更新漂浮文字
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            let ft = floatingTexts[i];
+            ft.y -= 1.5; // 向上飄
+            ft.opacity -= 0.02; // 逐漸透明
+            if (ft.opacity <= 0) floatingTexts.splice(i, 1);
+        }
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
         ctx.fillStyle = "rgba(255,255,255,0.4)";
         ctx.beginPath();
         ctx.arc(300, 150, 60, 0, Math.PI*2); ctx.arc(360, 160, 80, 0, Math.PI*2);
         ctx.fill();
+
+        coins.forEach(coin => {
+            if (coin.radius <= 0) return;
+            ctx.save();
+            ctx.translate(coin.x, coin.y);
+            const scale = 1 + Math.sin(coin.pulse) * 0.1;
+            ctx.scale(scale, scale);
+            
+            ctx.fillStyle = "#F6AD55";
+            ctx.beginPath(); ctx.arc(0, 0, coin.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#ECC94B";
+            ctx.beginPath(); ctx.arc(0, 0, coin.radius * 0.8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#B7791F";
+            ctx.font = `bold ${coin.radius}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("$", 0, 0);
+            ctx.restore();
+        });
 
         obstacles.forEach(ob => {
             let grad = ctx.createLinearGradient(ob.x, 0, ob.x + ob.width, 0);
@@ -300,10 +461,26 @@
             ctx.fillRect(ob.x, ob.gapBottom, ob.width, canvas.height - ob.gapBottom);
         });
 
+        // 繪製漂浮文字
+        floatingTexts.forEach(ft => {
+            ctx.save();
+            ctx.globalAlpha = ft.opacity;
+            ctx.fillStyle = "#D69E2E";
+            ctx.font = "bold 24px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(ft.text, ft.x, ft.y);
+            ctx.restore();
+        });
+
         ctx.save();
         ctx.translate(player.x, player.y);
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+        ctx.beginPath(); ctx.ellipse(0, player.size/2 + 20, player.size/2, 10, 0, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = "#f6e05e";
         ctx.beginPath(); ctx.arc(0, 0, player.size/2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#d69e2e";
+        ctx.lineWidth = 3;
+        ctx.stroke();
         ctx.restore();
     }
 
@@ -316,6 +493,7 @@
         if (gameState === 'PLAYING') requestAnimationFrame(gameLoop);
     }
     draw();
+    updateValueDisplays();
 </script>
 </body>
 </html>
