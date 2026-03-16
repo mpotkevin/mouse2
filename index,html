@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中風復健訓練：垂直導航遊戲</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f4f8;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            touch-action: none;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            cursor: none;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #87ceeb, #e0f6ff);
+        }
+        /* 右下角設定按鈕 */
+        #settings-toggle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #4299e1;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        #settings-toggle:hover {
+            transform: scale(1.1);
+            background: #3182ce;
+        }
+
+        /* 參數調整面板 */
+        .ui-panel {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            max-width: 300px;
+            z-index: 100;
+            display: none;
+        }
+        .ui-panel.show {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 統計面板 */
+        .top-stats {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 25px;
+            border-radius: 30px;
+            font-size: 1.25rem;
+            backdrop-filter: blur(4px);
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .control-group { margin-bottom: 12px; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        
+        #message-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            z-index: 200;
+            max-width: 400px;
+            width: 90%;
+        }
+        .btn {
+            background: #4299e1;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+        .btn:hover { background: #3182ce; }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4299e1;
+            color: #4299e1;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="top-stats">
+        <div class="stat-card">時間: <span id="timer">00:00</span></div>
+        <div class="stat-card">得分: <span id="score">0</span></div>
+    </div>
+
+    <div id="settings-toggle" title="調整設定">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </div>
+
+    <div class="ui-panel" id="settings-panel">
+        <h2 class="text-lg font-bold mb-3 text-blue-600">復健參數調整</h2>
+        <div class="control-group">
+            <label>前進速度</label>
+            <input type="range" id="param-speed" min="1" max="10" value="3">
+        </div>
+        <div class="control-group">
+            <label>垂直靈敏度</label>
+            <input type="range" id="param-sensitivity" min="0.1" max="4" step="0.1" value="1.5">
+        </div>
+        <div class="control-group">
+            <label>安全通道大小</label>
+            <input type="range" id="param-gap" min="150" max="450" value="280">
+        </div>
+        <div class="control-group">
+            <label>角色大小</label>
+            <input type="range" id="param-size" min="20" max="60" value="40">
+        </div>
+        <button class="btn btn-outline w-full py-2 mt-2" onclick="toggleSettings()">關閉面板</button>
+    </div>
+
+    <div id="message-overlay">
+        <h1 id="msg-title" class="text-3xl font-bold mb-2">垂直導航練習</h1>
+        <p id="msg-content" class="text-gray-600 mb-6">前後移動滑鼠來控制角色</p>
+        <button class="btn w-full" id="start-btn" onclick="startGame()">開始練習</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const timerElement = document.getElementById('timer');
+    const messageOverlay = document.getElementById('message-overlay');
+    const msgTitle = document.getElementById('msg-title');
+    const msgContent = document.getElementById('msg-content');
+    const settingsPanel = document.getElementById('settings-panel');
+    const settingsToggle = document.getElementById('settings-toggle');
+
+    let gameState = 'START';
+    let score = 0;
+    let animationId;
+    let lastTime = 0;
+    let timerElapsed = 0;
+
+    let player = { x: 100, y: 0, size: 40, targetY: 0 };
+    let obstacles = [];
+    
+    const params = {
+        get speed() { return parseInt(document.getElementById('param-speed').value); },
+        get sensitivity() { return parseFloat(document.getElementById('param-sensitivity').value); },
+        get gap() { return parseInt(document.getElementById('param-gap').value); },
+        get playerSize() { return parseInt(document.getElementById('param-size').value); }
+    };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        player.y = canvas.height / 2;
+        player.targetY = player.y;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    settingsToggle.addEventListener('click', () => settingsPanel.classList.toggle('show'));
+
+    window.addEventListener('mousemove', (e) => {
+        if (gameState !== 'PLAYING') return;
+        const centerY = canvas.height / 2;
+        const deltaY = e.clientY - centerY;
+        let newY = centerY + (deltaY * params.sensitivity);
+        if (newY < player.size) newY = player.size;
+        if (newY > canvas.height - player.size) newY = canvas.height - player.size;
+        player.targetY = newY;
+    });
+
+    function updateTimerDisplay() {
+        const totalSeconds = Math.floor(timerElapsed / 1000);
+        const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const secs = (totalSeconds % 60).toString().padStart(2, '0');
+        timerElement.innerText = `${mins}:${secs}`;
+    }
+
+    function createObstacle() {
+        const gapY = Math.random() * (canvas.height - params.gap - 100) + 50;
+        obstacles.push({ x: canvas.width, gapTop: gapY, gapBottom: gapY + params.gap, width: 70, passed: false });
+    }
+
+    function startGame() {
+        gameState = 'PLAYING';
+        messageOverlay.style.display = 'none';
+        settingsPanel.classList.remove('show');
+        score = 0;
+        timerElapsed = 0;
+        scoreElement.innerText = score;
+        obstacles = [];
+        player.size = params.playerSize;
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function gameOver() {
+        gameState = 'GAME_OVER';
+        messageOverlay.style.display = 'block';
+        msgTitle.innerText = "練習結束";
+        msgContent.innerHTML = `
+            <div class="text-lg mb-2">本次得分: <span class="font-bold text-blue-600">${score}</span></div>
+            <div class="text-lg">練習時間: <span class="font-bold text-blue-600">${timerElement.innerText}</span></div>
+            <p class="mt-4 text-sm text-gray-500">這是一次很棒的肌肉控制練習！</p>
+        `;
+        document.getElementById('start-btn').innerText = "再次練習";
+    }
+
+    function update(dt) {
+        if (gameState !== 'PLAYING') return;
+        timerElapsed += dt;
+        updateTimerDisplay();
+        player.y += (player.targetY - player.y) * 0.15;
+        player.size = params.playerSize;
+
+        if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 450) createObstacle();
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            let ob = obstacles[i];
+            ob.x -= params.speed * (dt / 16);
+            if (player.x + player.size/2.5 > ob.x && player.x - player.size/2.5 < ob.x + ob.width) {
+                if (player.y - player.size/2.5 < ob.gapTop || player.y + player.size/2.5 > ob.gapBottom) gameOver();
+            }
+            if (!ob.passed && ob.x + ob.width < player.x) {
+                ob.passed = true;
+                score++;
+                scoreElement.innerText = score;
+            }
+            if (ob.x + ob.width < -100) obstacles.splice(i, 1);
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.beginPath();
+        ctx.arc(300, 150, 60, 0, Math.PI*2); ctx.arc(360, 160, 80, 0, Math.PI*2);
+        ctx.fill();
+
+        obstacles.forEach(ob => {
+            let grad = ctx.createLinearGradient(ob.x, 0, ob.x + ob.width, 0);
+            grad.addColorStop(0, '#e53e3e'); grad.addColorStop(1, '#9b2c2c');
+            ctx.fillStyle = grad;
+            ctx.fillRect(ob.x, 0, ob.width, ob.gapTop);
+            ctx.fillRect(ob.x, ob.gapBottom, ob.width, canvas.height - ob.gapBottom);
+        });
+
+        ctx.save();
+        ctx.translate(player.x, player.y);
+        ctx.fillStyle = "#f6e05e";
+        ctx.beginPath(); ctx.arc(0, 0, player.size/2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
+
+    function gameLoop(timestamp) {
+        let dt = timestamp - lastTime;
+        lastTime = timestamp;
+        if (dt > 100) dt = 16;
+        update(dt);
+        draw();
+        if (gameState === 'PLAYING') requestAnimationFrame(gameLoop);
+    }
+    draw();
+</script>
+</body>
+</html>
